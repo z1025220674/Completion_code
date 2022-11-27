@@ -1,5 +1,5 @@
 //===================================
-//data:2022/11/23
+//date:2022/11/23
 //function:generate chaotic sequence x_{n}=4*x_{n-1}*(1<<16-x_{n-1})>>16
 //email:1025220674@qq.com
 //vivado2018.3
