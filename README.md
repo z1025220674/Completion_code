@@ -56,27 +56,39 @@
 5. 将功能1，每个公式输出xn经过判断后存入chaos_buffer
    + $2^{15}$ 是中位数，大于等于就取1，小于取0：最高位第16位为1，就代表大于等于中位数
 
+![image-20221127153746863](./混沌序列生成图)
+
 ![image-20221127122440822](./混沌序列仿真图)
 
-## 2 序列转化参数单元
+## 2 复数生成单元
 
-$$\huge\theta=(vld\_seq*360)>>GAIN\_INDEX$$
+cordic单元公式如下：
 
-$$\huge\theta_1=(vld\_seq(1:N/2)*360)>>GAIN\_INDEX/2$$
+![image-20221127151846208](./cordic公式图)
 
-$$\huge\theta_2=(vld\_seq(1+N/2:N)*360)>>GAIN\_INDEX/2$$
+固定P参数，也就同时固定旋转次数，只需要输入角度，就可以输出对应sin和cos
 
-$$\huge z_1=(vld\_seq(1:N/2)*4096*18)>>GAIN\_INDEX/2$$
+![](./cordic逻辑图)
+
+## 3 序列转化参数单元
+
+$$\huge\theta=(vld\_seq*360)>>seq\_len$$
+
+$$\huge\theta_1=(vld\_seq(1:len/2)*360)>>seq\_len/2$$
+
+$$\huge\theta_2=(vld\_seq(1+N/2:N)*360)>>seq\_len/2$$
+
+$$\huge z_1=(vld\_seq(1:N/2)*4096*18)>>seq\_len/2$$
 
 $$\huge z_2=(vld\_seq(1+N/2:N)*4096*18)>>GAIN\_INDEX/2$$
 
-$$\huge N=subcarries*OFDM\_symbols$$
+$$\huge N=subcarriers*OFDM\_symbols$$
 
 六个随机数最后作为参数输入到矩阵生成单元中
 
+$\theta$在fpga中不需要右移位，使用放缩法，默认五个参数扩大$2^{seq_len}$
 
-
-## 3 矩阵生成单元
+## 4 矩阵生成单元
 
 ![image-20221125210912325](./s1s2)                                     （3-1)
 
