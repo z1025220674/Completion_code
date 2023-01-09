@@ -4,7 +4,7 @@
 //email:1025220674@qq.com
 //vivado2018.3
 //===================================
-module chaotic_seq #(
+module logistic_seq #(
     ITERATIONS      =   200,
     CHAOS_OVLD_W    =   32,
     GAIN_INDEX      =   16
