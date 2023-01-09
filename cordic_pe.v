@@ -10,16 +10,26 @@
 //利用这一点，从(K,0)处迭代旋转至θ处的单位矢量即可。
 //*********************************************************
 
-
+/*
+cordic_pe test (
+    .clk(),
+    .rst_n(),
+    .angle(),
+    .start(),
+    .Sin(),
+    .Cos(),
+    .finished()
+);
+*/
 module cordic_pe(
-input 			clk,
-input 			rst_n,
-input	[8:0]	angle,
-input			start,
+input 			            clk,
+input 			            rst_n,
+input	[8:0]	            angle,
+input			            start,
 
 output 	reg signed[31:0]	Sin,
 output 	reg signed[31:0]	Cos,
-output 			finished
+output 			            finished
 
 );
 

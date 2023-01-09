@@ -28,7 +28,7 @@ localparam GAIN_INDEX   = 16;
 
 
 
-chaotic_seq #(
+logistic_seq #(
     .ITERATIONS(ITERATIONS),
     .CHAOS_OVLD_W(CHAOS_OVLD_W),
     .GAIN_INDEX(GAIN_INDEX)     //2^16         
@@ -43,7 +43,7 @@ chaotic_seq #(
     .chaos_xout_rdy()
 );
 
-chaotic_seq #(
+logistic_seq #(
     .ITERATIONS(ITERATIONS),
     .CHAOS_OVLD_W(CHAOS_OVLD_W),
     .GAIN_INDEX(GAIN_INDEX)     //2^16         
