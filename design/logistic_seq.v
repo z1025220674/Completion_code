@@ -124,7 +124,7 @@ module logistic_seq #(
             chaos_buffer    <=  'b0;    
         end 
         else if(fmla_en_r1)begin
-            chaos_buffer    <= xn_r[GAIN_INDEX-1] ? {chaos_buffer<<1,1'b1} : chaos_buffer<<1;
+            chaos_buffer    <= {chaos_buffer[30:0],xn_r[GAIN_INDEX-1] } ;
         end
     end
 
