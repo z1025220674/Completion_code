@@ -7,7 +7,7 @@ module float_add    //不同符号的浮点数据相加
 	
 	output wire [31:0] ab
 );
- 
+ 阿萨德
 reg [7:0] pow_a;
 reg [7:0] pow_b;
 reg [22:0] val_a;
