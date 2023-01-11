@@ -118,7 +118,7 @@ module logistic_seq #(
             fmla_en_r <=  1'b1;
         end
     end
-    //4.jeudge
+    //4.judge
     always @(posedge clk ) begin
         if (!rst_n) begin
             chaos_buffer    <=  'b0;    
