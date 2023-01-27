@@ -24,12 +24,12 @@ cordic_pe test (
 module cordic_pe(
 input 			            clk,
 input 			            rst_n,
-input	[8:0]	            angle,
-input			            start,
+input	[8:0]	            angle,          //输入角度
+input			            vld,
 
 output 	reg signed[31:0]	Sin,
 output 	reg signed[31:0]	Cos,
-output 			            finished
+output 			            finished_ndg
 
 );
 
@@ -76,26 +76,47 @@ reg signed 	[31:0] 		x16=0,y16=0,z16=0;
 
 reg  [4:0]           count;
 //======================================
-//judge quadrants
+//start
 //======================================
+reg         [1 :0]          stat_nxt;
+reg         [1 :0]          stat_cur;
+wire                        finished;
+localparam                  IDLE=0;
+localparam                  START=1;
 
-
+always @(*) begin
+    case (stat_cur)
+        IDLE    :stat_nxt=vld?START:stat_cur;//vld转到激活状态
+        START   :stat_nxt=finished?IDLE:stat_cur;
+        default :stat_nxt=stat_cur;
+    endcase
+end
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        stat_cur  <=   IDLE;
+    end
+    else begin
+        stat_cur  <=    stat_nxt;
+    end
+end
 //======================================
 //logic 
 //======================================
 
-
+assign finished_ndg =   stat_cur&(~stat_nxt);
 always@(posedge clk or negedge rst_n)begin
 	if(!rst_n)
 		count <= 'b0;
-	else if(start)begin
+	else if(stat_nxt==IDLE)begin
+        count   <=  'b0;
+    end
+    else if(stat_nxt==START)begin
 		if(count != 5'd18)
 			count <= count + 1'b1;
 		else 
 			count <= count;
-	end
+    end 
 end
-
 assign finished = (count == 5'd18)?1'b1:1'b0;
 
 always@(posedge clk or negedge rst_n)begin
