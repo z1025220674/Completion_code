@@ -35,7 +35,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     // reg                     [31     :0]         theta2_r;
     // reg                     [31     :0]         z1_r;
     // reg                     [31     :0]         z2_r;
-    reg                                         rand_shake_r;
+    // reg                                         rand_shake_r;
     wire                    [31     :0]         theta;
     wire                    [31     :0]         theta1;
     wire                    [31     :0]         theta2;
@@ -61,14 +61,14 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         z2      <=  (rand_z2>>16)*360;
         rand_shake  <=  rand_vld&rand_rdy;
     end
-    always @(posedge clk or negedge rst_n) begin//syn cordic_angle
-        if(!rst_n)begin
-            rand_shake_r    <=  'b0;
-        end
-        else begin
-            rand_shake_r    <=  rand_shake;
-        end
-    end
+    // always @(posedge clk or negedge rst_n) begin//syn cordic_angle
+    //     if(!rst_n)begin
+    //         rand_shake_r    <=  'b0;
+    //     end
+    //     else begin
+    //         rand_shake_r    <=  rand_shake;
+    //     end
+    // end
 //========================================2
 //s1 and s2 sequence
 //=========================================
@@ -124,15 +124,23 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 // generate matrix
 //-------------------------------------
     
-    always @(posedge clk or negedge rst_n) begin    //syn delay
-        if (!rst_n) begin
-            z1_r    <=  'b0;    
-            z2_r    <=  'b0;    
-        end 
-        else begin
-            
-        end
-    end    
+    csc_stor inst_ #(
+        MAT_RANK(MAT_RANK)
+    ) (
+        .clk(clk),
+        .rst_n(rst_n),
+        //输入参数
+        .z1(z1),
+        .z2(z2),
+        .s_val_i(s12_ival),
+        .s_val_r(s12_rval),
+        .a0_val_i(a0_ival),
+        .a0_val_r(a0_rval),
+        .a1_val_i(a1_ival),
+        .a1_val_r(a1_rval),
+        .val_vld(s_vld)
+
+    );
     //---------------------------------------浮点乘法器
     // assign rand_rdy = ;
     // //float 3 delay
