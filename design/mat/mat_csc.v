@@ -39,8 +39,8 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     wire                    [31     :0]         theta;
     wire                    [31     :0]         theta1;
     wire                    [31     :0]         theta2;
+    wire                    [31     :0]         z0;
     wire                    [31     :0]         z1;
-    wire                    [31     :0]         z2;
     wire                                        rand_shake;
     //float1
 //========================================    
@@ -57,8 +57,8 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         theta   <=  ((rand_x1>>16)*360);//16位代表0-1的范围
         theta1  <=  (rand_x2>>16)*360;
         theta2  <=  (rand_x3>>16)*360;
-        z1      <=  (rand_z1>>16)*360;
-        z2      <=  (rand_z2>>16)*360;
+        z0      <=  (rand_z1>>16)*360;
+        z1      <=  (rand_z2>>16)*360;
         rand_shake  <=  rand_vld&rand_rdy;
     end
     // always @(posedge clk or negedge rst_n) begin//syn cordic_angle
@@ -130,8 +130,8 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         .clk(clk),
         .rst_n(rst_n),
         //输入参数
+        .z0(z0),
         .z1(z1),
-        .z2(z2),
         .s_val_i(s12_ival),
         .s_val_r(s12_rval),
         .a0_val_i(a0_ival),
