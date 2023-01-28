@@ -30,11 +30,11 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //=========================================
 //declare variable
 //=========================================
-    reg                     [31     :0]         theta_r;
-    reg                     [31     :0]         theta1_r;
-    reg                     [31     :0]         theta2_r;
-    reg                     [31     :0]         z1_r;
-    reg                     [31     :0]         z2_r;
+    // reg                     [31     :0]         theta_r;
+    // reg                     [31     :0]         theta1_r;
+    // reg                     [31     :0]         theta2_r;
+    // reg                     [31     :0]         z1_r;
+    // reg                     [31     :0]         z2_r;
     reg                                         rand_shake_r;
     wire                    [31     :0]         theta;
     wire                    [31     :0]         theta1;
@@ -43,7 +43,11 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     wire                    [31     :0]         z2;
     wire                                        rand_shake;
     //float1
-    
+//========================================    
+//output
+//========================================
+
+    assign  rand_rdy    =   ;
 
 //========================================2
 //theta、theta1、theta2、z1、z2
@@ -66,15 +70,69 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         end
     end
 //========================================2
-//cordic mod
+//s1 and s2 sequence
 //=========================================
-   
+   wire                                             s_vld;
+   wire                                             s_rdy;          //被矩阵生成模块约束    
+   wire                 [31     : 0]                s12_ival;
+   wire                 [31     : 0]                s12_rval;
+   cordic_mod inst_s(
+    .clk(clk),
+    .rst_n(rst_n),
+    .theta(theta),              //输入随机序列生成theta
+    .rand_shake(rand_shake),    //vld信号
+    .rdy_i(s_rdy),
+    .vld_o(s_vld),              //输出vld
+    .i_signal_o(s12_ival),      //输出虚部信号
+    .r_signal_o(s12_rval)       //输出实部信号
+    );
+    //s1,s2俩个序列，本模块输出俩序列的非零值（0和N/2处的非零值）
+    //只有s2的N/2是实部和虚部乘（-1）
 //-------------------------------------
-//csc format 
+// a0
 //-------------------------------------
+   wire                 [31     : 0]                a0_ival;
+   wire                 [31     : 0]                a0_rval;
+    cordic_mod isnt_a0(
+    .clk(clk),
+    .rst_n(rst_n),
+    .theta(theta1),             //输入随机序列生成theta
+    .rand_shake(rand_shake),    //vld信号
+    .rdy_i(s_rdy),
+    // .vld_o(s_vld),           //输出vld
+    .i_signal_o(a0_ival),       //输出虚部信号
+    .r_signal_o(a0_rval)        //输出实部信号
+    );
 
+//-------------------------------------
+// a1
+//-------------------------------------
+   wire                 [31     : 0]                a1_ival;
+   wire                 [31     : 0]                a1_rval;
+    cordic_mod isnt_a1(
+    .clk(clk),
+    .rst_n(rst_n),
+    .theta(theta2),             //输入随机序列生成theta
+    .rand_shake(rand_shake),            u//vld信号
+    .rdy_i(s_rdy),
+    // .vld_o(s_vld),           //输出vld
+    .i_signal_o(a1_ival),       //输出虚部信号
+    .r_signal_o(a1_rval)        //输出实部信号
+    );
 
-
+//-------------------------------------
+// generate matrix
+//-------------------------------------
+    
+    always @(posedge clk or negedge rst_n) begin    //syn delay
+        if (!rst_n) begin
+            z1_r    <=  'b0;    
+            z2_r    <=  'b0;    
+        end 
+        else begin
+            
+        end
+    end    
     //---------------------------------------浮点乘法器
     // assign rand_rdy = ;
     // //float 3 delay

@@ -1,10 +1,12 @@
 //功能：输入theta（角度），根据欧拉公式输出对应角度的实部和虚部
+//延迟：本模块经过18+2 cycle延迟
 /*
 cordic_mod (
     .clk(clk),
     .rst_n(rst_n),
     .theta(),          //输入随机序列生成theta
     .rand_shake(),     //vld信号
+    .rdy_i(),
     .vld_o(),          //输出vld
     .i_signal_o(),     //输出虚部信号
     .r_signal_o()      //输出实部信号
@@ -16,7 +18,8 @@ module cordic_mod (
     input                                       rst_n,
     input               [31     : 0]            theta,          //输入随机序列生成theta
     input                                       rand_shake,     //vld信号
-    output                                      vld_o,          //输出vld
+    input                                       rdy_i,
+    output                                      vld_o,          //输出vld ，延迟20cycle相比输入
     output              [31     : 0]            i_signal_o,     //输出虚部信号
     output              [31     : 0]            r_signal_o      //输出实部信号
 );
@@ -33,7 +36,7 @@ assign  vld_o   =   vld_r;
     wire                    [31     :0]         r_signal;
     wire                    [31     :0]         i_signal;
     wire                                        vld;
-    always @(posedge clk or negedge rst_n) begin
+    always @(posedge clk or negedge rst_n) begin                //1delay
         if (!rst_n) begin
             cordic_angle    <=  'b0;
             flag_sin    <=  'd0;
@@ -83,6 +86,8 @@ assign  vld_o   =   vld_r;
     reg                         [31     : 0]        r_signal_r;
     wire                        [1      : 0]        flag_sc;
     reg                                             vld_r;
+    wire                                            hand_shake;
+    assign  hand_shake  =   vld_o&rdy_i;
     assign  flag_sc =   {flag_sin,flag_cos};
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -119,7 +124,10 @@ assign  vld_o   =   vld_r;
         if (!rst_n) begin
             vld_r   <=  'b0;
         end 
-        else begin
+        else if (hand_shake) begin
+            vld_r   <=  'b0;
+        end
+        else if(vld)begin
             vld_r   <=  vld;
         end
     end

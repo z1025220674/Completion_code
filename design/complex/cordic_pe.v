@@ -4,7 +4,7 @@
 //function:Input the target angle, the output corresponds to sin and cos
 //=========================================================
 //*********************************************************
-//功能1：已知角度θ，求正弦sinθ和余弦cosθ
+//功能1：已知角度θ，经过16迭代求正弦sinθ和余弦cosθ
 
 //思想:若向量模值为1，则其x坐标就是余弦值，y坐标就是正弦值。
 //利用这一点，从(K,0)处迭代旋转至θ处的单位矢量即可。
@@ -21,13 +21,13 @@ cordic_pe test (
     .finished()
 );
 */
-module cordic_pe(
+module cordic_pe(               
 input 			            clk,
 input 			            rst_n,
 input	[8:0]	            angle,          //输入角度
 input			            vld,
 
-output 	reg signed[31:0]	Sin,
+output 	reg signed[31:0]	Sin,            //经过18 cycle
 output 	reg signed[31:0]	Cos,
 output 			            finished_ndg
 
@@ -119,7 +119,7 @@ always@(posedge clk or negedge rst_n)begin
 end
 assign finished = (count == 5'd18)?1'b1:1'b0;
 
-always@(posedge clk or negedge rst_n)begin
+always@(posedge clk or negedge rst_n)begin//赋值
 	if(!rst_n)begin
 		x0 <= 'b0;
 		y0 <= 'b0;
@@ -422,7 +422,7 @@ always@(posedge clk or negedge rst_n)begin//第16次迭代
 	end
 end 
 
-always@(posedge clk or negedge rst_n)begin
+always@(posedge clk or negedge rst_n)begin//一次赋值
 	if(!rst_n)begin
 		Cos <= 'b0;
 		Sin <= 'b0;
