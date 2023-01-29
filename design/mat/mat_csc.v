@@ -83,7 +83,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     .rand_shake(rand_shake),    //vld信号
     .rdy_i(s_rdy),
     .vld_o(s_vld),              //输出vld
-    .i_signal_o(s12_ival),      //输出虚部信号
+    .i_signal_o(s12_ival),      //输出虚部信号  放大16倍
     .r_signal_o(s12_rval)       //输出实部信号
     );
     //s1,s2俩个序列，本模块输出俩序列的非零值（0和N/2处的非零值）
