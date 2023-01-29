@@ -49,12 +49,22 @@ module csc_stor #(
     reg                 [31     : 0]            S_val_i3_r;
     reg                 [31     : 0]            S_val_r3_r;
 
+//=========================================
+//复数乘法公式
+//=========================================
 
+
+
+    wire                        [63     : 0]    s_z0_i;
+    wire                        [63     : 0]    s_z0_r;
+    assign s_z0_i   =   $signed(a0_val_i)*$signed(s_val_r) + $signed(a0_val_r)*$signed(s_val_i) ;
+    assign s_z0_r   =   $signed(a0_val_i)*$signed(s_val_i) + $signed(a0_val_r)*$signed(s_val_r) ;
+    
 //=========================================
 //生成第一行向量非零元素
 //=========================================
 
-
+    S_i[z0]= a0_val_r       //
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             S_val_i0_r  <=  32'b0;
@@ -66,8 +76,18 @@ module csc_stor #(
             S_val_i3_r  <=  32'b0;
             S_val_r3_r  <=  32'b0;
         end 
-        else if(val_vld)begin
-            S_val_i0_r  <=  ;
+        else if(val_vld && z0!=z1)begin             //4个非零元素
+            S_val_i0_r  <=  (s_z0_i)>>1;
+            S_val_r0_r  <=  (s_z0_r)>>1;
+            S_val_i1_r  <=  ()>>1;
+            S_val_r1_r  <=  ()>>1;
+            S_val_i2_r  <=  ()>>1;
+            S_val_r2_r  <=  ()>>1;
+            S_val_i3_r  <=  ()>>1;
+            S_val_r3_r  <=  ()>>1;
+        end
+        else if(val_vld && z0==z1)begin
+            S_val_i0_r  <=  ()>>1;
             S_val_r0_r  <=  32'b0;
             S_val_i1_r  <=  32'b0;
             S_val_r1_r  <=  32'b0;
@@ -75,6 +95,7 @@ module csc_stor #(
             S_val_r2_r  <=  32'b0;
             S_val_i3_r  <=  32'b0;
             S_val_r3_r  <=  32'b0;
+            
         end
     end
 
