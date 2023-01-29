@@ -67,7 +67,7 @@ module csc_stor #(
             S_val_r3_r  <=  32'b0;
         end 
         else if(val_vld)begin
-            S_val_i0_r  <=  32'b0;
+            S_val_i0_r  <=  ;
             S_val_r0_r  <=  32'b0;
             S_val_i1_r  <=  32'b0;
             S_val_r1_r  <=  32'b0;

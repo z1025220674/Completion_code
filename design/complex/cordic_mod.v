@@ -30,12 +30,14 @@ assign  vld_o   =   vld_r;
 //========================================2
 //Quadrant division
 //=========================================
-    reg                     [7      :0]         cordic_angle;          
+    reg                     [24      :0]        cordic_angle;    //360整数部分      
     reg                                         flag_sin;
     reg                                         flag_cos;
     wire                    [31     :0]         r_signal;
     wire                    [31     :0]         i_signal;
     wire                                        vld;
+    localparam  _360=360<<16;
+    localparam  _180=180<<16;
     always @(posedge clk or negedge rst_n) begin                //1delay
         if (!rst_n) begin
             cordic_angle    <=  'b0;
@@ -43,32 +45,31 @@ assign  vld_o   =   vld_r;
             flag_cos    <=  'd0;
         end 
         else if (rand_shake) begin
-            if(theta[26:16]>'d180) begin
-                if (theta[26:16]>'d270) begin//4
-                    cordic_angle    <=  360-theta[26:16];
+            if(theta[24:16]>'d180) begin
+                if (theta[24:16]>'d270) begin//4
+                    cordic_angle    <=  _360-theta[24:0];
                     flag_sin    <=  'd0;//-1
                     flag_cos    <=  'd1;
                 end else begin//3
-                    cordic_angle    <=  theta[26:16]-180;
+                    cordic_angle    <=  theta[24:0]-_180;
                     flag_sin    <=  'd0;//-1
                     flag_cos    <=  'd0;
                 end
             end
             else begin
-                if (theta[26:16]>'d90) begin//2
-                    cordic_angle    <=  180-theta[26:16];
+                if (theta[24:16]>'d90) begin//2
+                    cordic_angle    <=  _180-theta[24:0];
                     flag_sin    <=  'd1;//-1
                     flag_cos    <=  'd0;
                 end 
                 else begin//1
-                    cordic_angle    <=  theta[26:16];
+                    cordic_angle    <=  theta[24:0];
                     flag_sin    <=  'd1;//-1
                     flag_cos    <=  'd1;
                 end
             end    
         end
     end
- 
     cordic_pe inst_theta (
     .clk(clk),
     .rst_n(rst_n),
