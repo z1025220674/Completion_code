@@ -14,8 +14,19 @@ csc_stor inst_ #(
     .a0_val_r(),
     .a1_val_i(),
     .a1_val_r(),
-    .val_vld()
-
+    .val_vld(),
+    .val_rdy(),
+    .Scol_index(),
+    .S_val_i0(),
+    .S_val_r0(),
+    .S_val_i1(),
+    .S_val_r1(),
+    .S_val_i2(),
+    .S_val_r2(),
+    .S_val_i3(),
+    .S_val_r3(),
+    .S_vld_o(),
+    .S_rdy_o()
 );
 */
 //function：generate row vector of matrix
