@@ -18,7 +18,7 @@ module mat_csc #(
     input       [CHAOS_OVLD_W       -1: 0]      rand_z1,
     input       [CHAOS_OVLD_W       -1: 0]      rand_z2,
     input                                       rand_vld,
-    output                                      rand_rdy
+    output                                      rand_rdy            //闲时*请求上级输入参数，
 
 
 );
@@ -36,6 +36,8 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     // reg                     [31     :0]         z1_r;
     // reg                     [31     :0]         z2_r;
     // reg                                         rand_shake_r;
+    reg                                         rand_rdy_r;
+
     wire                    [31     :0]         theta;
     wire                    [31     :0]         theta1;
     wire                    [31     :0]         theta2;
@@ -47,8 +49,16 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //output
 //========================================
 
-    assign  rand_rdy    =   ;
+    assign  rand_rdy    =   rand_rdy_r;
 
+    always @(posedge clk or negedge rst_n) begin        //闲时请求上级输入，拉高条件：表明当前空闲
+        if (!rst_n) begin                               //拉低条件（输入握手后，最后矩阵乘输出握手后）：表明正忙,输入握手拉高，
+            rand_rdy_r  <=  'b0;    
+        end 
+        else if()begin
+            rand_rdy_r  <=  'b1;
+        end
+    end
 //========================================2
 //theta、theta1、theta2、z1、z2
 //=========================================
@@ -113,7 +123,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     .clk(clk),
     .rst_n(rst_n),
     .theta(theta2),             //输入随机序列生成theta
-    .rand_shake(rand_shake),            u//vld信号
+    .rand_shake(rand_shake),            //vld信号
     .rdy_i(s_rdy),
     // .vld_o(s_vld),           //输出vld
     .i_signal_o(a1_ival),       //输出虚部信号
@@ -138,8 +148,19 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         .a0_val_r(a0_rval),
         .a1_val_i(a1_ival),
         .a1_val_r(a1_rval),
-        .val_vld(s_vld)
-
+        .val_vld(s_vld),
+        .val_rdy(s_rdy),                //闲时*向上级模块请求输入参数的信号
+        .Scol_index(),
+        .S_val_i0(),
+        .S_val_r0(),
+        .S_val_i1(),
+        .S_val_r1(),
+        .S_val_i2(),
+        .S_val_r2(),
+        .S_val_i3(),
+        .S_val_r3(),
+        .S_vld_o(),
+        .S_rdy_o()
     );
     //---------------------------------------浮点乘法器
     // assign rand_rdy = ;

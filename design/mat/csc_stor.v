@@ -98,6 +98,7 @@ module csc_stor #(                                                          //1c
     assign  S_val_r3    =   S_val_r3_r;
     assign  Scol_index  =   Scol_index_r;
     assign  S_vld_o =   S_vld_o_r;
+    assign  val_rdy =   val_rdy_r;
 //=========================================
 //shake
 //=========================================
