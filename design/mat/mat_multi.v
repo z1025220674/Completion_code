@@ -5,6 +5,10 @@ module mat_multi #(
     input                                                           clk,
     input                                                           rst_n,
 
+    input            [31                        : 0]                src_i,
+    input            [31                        : 0]                src_r,
+    input                                                           src_vld,
+    output                                                          src_rdy,
     input            [$clog2(MAT_RANK)<<2     -1: 0]                Scol_index,
     input            [31                        : 0]                S_val_i0,
     input            [31                        : 0]                S_val_r0,
