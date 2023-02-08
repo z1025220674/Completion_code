@@ -36,14 +36,31 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     // reg                     [31     :0]         z1_r;
     // reg                     [31     :0]         z2_r;
     // reg                                         rand_shake_r;
-    reg                                         rand_rdy_r;
+    reg                                                     rand_rdy_r;
 
-    wire                    [31     :0]         theta;
-    wire                    [31     :0]         theta1;
-    wire                    [31     :0]         theta2;
-    wire                    [31     :0]         z0;
-    wire                    [31     :0]         z1;
-    wire                                        rand_shake;
+    wire    [31                        : 0]                 theta;
+    wire    [31                        : 0]                 theta1;
+    wire    [31                        : 0]                 theta2;
+    wire    [31                        : 0]                 z0;
+    wire    [31                        : 0]                 z1;
+    wire                                                    rand_shake;
+
+    wire                                                    s_vld;
+    wire                                                    s_rdy;          //被矩阵生成模块约束    
+    wire    [31                        : 0]                 s12_ival;
+    wire    [31                        : 0]                 s12_rval;
+
+    wire    [$clog2(MAT_RANK)<<2     -1: 0]                 Scol_index;
+    wire    [31                        : 0]                 S_val_i0;
+    wire    [31                        : 0]                 S_val_r0;
+    wire    [31                        : 0]                 S_val_i1;
+    wire    [31                        : 0]                 S_val_r1;
+    wire    [31                        : 0]                 S_val_i2;
+    wire    [31                        : 0]                 S_val_r2;
+    wire    [31                        : 0]                 S_val_i3;
+    wire    [31                        : 0]                 S_val_r3;
+    wire                                                    S_vld_o;
+    wire                                                    S_rdy_o;
     //float1
 //========================================    
 //output
@@ -82,10 +99,6 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //========================================2
 //s1 and s2 sequence
 //=========================================
-   wire                                             s_vld;
-   wire                                             s_rdy;          //被矩阵生成模块约束    
-   wire                 [31     : 0]                s12_ival;
-   wire                 [31     : 0]                s12_rval;
    cordic_mod inst_s(
     .clk(clk),
     .rst_n(rst_n),
@@ -134,9 +147,9 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 // generate matrix
 //-------------------------------------
     
-    csc_stor inst_ #(
+    csc_stor  #(
         MAT_RANK(MAT_RANK)
-    ) (
+    ) inst_matrix_gern(
         .clk(clk),
         .rst_n(rst_n),
         //输入参数
@@ -150,18 +163,23 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         .a1_val_r(a1_rval),
         .val_vld(s_vld),
         .val_rdy(s_rdy),                //闲时*向上级模块请求输入参数的信号
-        .Scol_index(),
-        .S_val_i0(),
-        .S_val_r0(),
-        .S_val_i1(),
-        .S_val_r1(),
-        .S_val_i2(),
-        .S_val_r2(),
-        .S_val_i3(),
-        .S_val_r3(),
-        .S_vld_o(),
-        .S_rdy_o()
+        .Scol_index(Scol_index),                  //矩阵首行非零元素位置，后续n行，则各非零元素整体向右移n个
+        .S_val_i0(S_val_i0),                    //第一个非零元素，非零元素最少2个，最多四个
+        .S_val_r0(S_val_r0),
+        .S_val_i1(S_val_i1),
+        .S_val_r1(S_val_r1),
+        .S_val_i2(S_val_i2),
+        .S_val_r2(S_val_r2),
+        .S_val_i3(S_val_i3),
+        .S_val_r3(S_val_r3),
+        .S_vld_o(S_vld_o),
+        .S_rdy_o(S_rdy_o)
     );
+//================================
+// matrix multi
+//================================
+
+
     //---------------------------------------浮点乘法器
     // assign rand_rdy = ;
     // //float 3 delay

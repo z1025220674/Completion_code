@@ -119,10 +119,10 @@ module csc_stor #(                                                          //1c
             S_vld_o_r   <=  'b0;
         end 
         else if(S_vld_o_r && S_rdy_o)begin
-            S_vld_o_r   <=  b'0;
+            S_vld_o_r   <=  'b0;
         end
         else if(val_shake)begin
-            S_vld_o_r   <=  b'1;
+            S_vld_o_r   <=  'b1;
         end
     end
 
