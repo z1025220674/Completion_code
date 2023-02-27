@@ -21,6 +21,7 @@
 
 //功能：输入theta（角度），根据欧拉公式输出对应角度的实部和虚部
 //延迟：本模块经过18+2 cycle延迟
+//完成2023/2/28，完成修改，修改cordic-pe的精度问题，和16次迭代的复位问题
 /*
 cordic_mod (
     .clk(clk),
@@ -105,7 +106,7 @@ module cordic_mod (
     cordic_pe inst_theta (
     .clk(clk),
     .rst_n(rst_n),
-    .angle(cordic_angle),
+    .angle(cordic_angle[22:0]),           //vivado文件修改了位宽
     .vld(rand_shake_r),
     .Sin(i_signal),
     .Cos(r_signal),

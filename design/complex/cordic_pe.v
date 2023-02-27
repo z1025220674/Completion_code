@@ -4,8 +4,8 @@
 //function:Input the target angle, the output corresponds to sin and cos
 //=========================================================
 //*********************************************************
-//功能1：已知角度θ，经过16迭代求正弦sinθ和余弦cosθ
-//
+//功能1：已知角度θ，求正弦sinθ和余弦cosθ
+
 //思想:若向量模值为1，则其x坐标就是余弦值，y坐标就是正弦值。
 //利用这一点，从(K,0)处迭代旋转至θ处的单位矢量即可。
 //*********************************************************
@@ -18,18 +18,18 @@ cordic_pe test (
     .start(),
     .Sin(),
     .Cos(),
-    .finished_ndg()
+    .finished()
 );
 */
-module cordic_pe(               
+module cordic_pe(
 input 			            clk,
 input 			            rst_n,
-input	[24:0]	            angle,          //输入角度
+input	[22:0]	            angle,          //输入角度 最大90，放大65536倍
 input			            vld,
 
-output 	reg signed[31:0]	Sin,            //经过18 cycle，放大16倍
+output 	reg signed[31:0]	Sin,
 output 	reg signed[31:0]	Cos,
-output 			            finished_1
+output 			            finished_ndg
 
 );
 
@@ -80,19 +80,19 @@ reg  [4:0]           count;
 //======================================
 reg         [1 :0]          stat_nxt;
 reg         [1 :0]          stat_cur;
-wire                        finished_ndg;
+wire                        finished;
 localparam                  IDLE=0;
 localparam                  START=1;
 
 always @(*) begin
     case (stat_cur)
         IDLE    :stat_nxt=vld?START:stat_cur;//vld转到激活状态
-        START   :stat_nxt=finished_ndg?IDLE:stat_cur;
+        START   :stat_nxt=finished?IDLE:stat_cur;
         default :stat_nxt=stat_cur;
     endcase
 end
 always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
+    if (!rst_n ) begin
         stat_cur  <=   IDLE;
     end
     else begin
@@ -103,9 +103,9 @@ end
 //logic 
 //======================================
 
-assign finished_1 =   stat_cur&(~stat_nxt);
+assign finished_ndg =   stat_cur&(~stat_nxt);
 always@(posedge clk or negedge rst_n)begin
-	if(!rst_n)
+	if(!rst_n )
 		count <= 'b0;
 	else if(stat_nxt==IDLE)begin
         count   <=  'b0;
@@ -117,10 +117,14 @@ always@(posedge clk or negedge rst_n)begin
 			count <= count;
     end 
 end
-assign finished_ndg = (count == 5'd18)?1'b1:1'b0;
+assign finished = (count == 5'd18)?1'b1:1'b0;
+//======================================
+//iter
+//======================================
+wire            idle=stat_nxt==IDLE;
 
-always@(posedge clk or negedge rst_n)begin//赋值
-	if(!rst_n)begin
+always@(posedge clk or negedge rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x0 <= 'b0;
 		y0 <= 'b0;
 		z0 <= 'b0;
@@ -130,12 +134,12 @@ always@(posedge clk or negedge rst_n)begin//赋值
 	else begin
 		x0 <= K;
 		y0 <= 32'd0;
-		z0 <= angle ;
+		z0 <= angle;
 	end
 end 
 
 always@(posedge clk or negedge rst_n)begin//第一次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x1 <= 'b0;
 		y1 <= 'b0;
 		z1 <= 'b0;
@@ -153,7 +157,7 @@ always@(posedge clk or negedge rst_n)begin//第一次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第二次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x2 <= 'b0;
 		y2 <= 'b0;
 		z2 <= 'b0;
@@ -171,7 +175,7 @@ always@(posedge clk or negedge rst_n)begin//第二次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第3次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x3 <= 'b0;
 		y3 <= 'b0;
 		z3 <= 'b0;
@@ -189,7 +193,7 @@ always@(posedge clk or negedge rst_n)begin//第3次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第4次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x4 <= 'b0;
 		y4 <= 'b0;
 		z4 <= 'b0;
@@ -207,7 +211,7 @@ always@(posedge clk or negedge rst_n)begin//第4次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第5次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x5 <= 'b0;
 		y5 <= 'b0;
 		z5 <= 'b0;
@@ -225,7 +229,7 @@ always@(posedge clk or negedge rst_n)begin//第5次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第6次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x6 <= 'b0;
 		y6 <= 'b0;
 		z6 <= 'b0;
@@ -243,7 +247,7 @@ always@(posedge clk or negedge rst_n)begin//第6次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第7次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x7 <= 'b0;
 		y7 <= 'b0;
 		z7 <= 'b0;
@@ -261,7 +265,7 @@ always@(posedge clk or negedge rst_n)begin//第7次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第8次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x8 <= 'b0;
 		y8 <= 'b0;
 		z8 <= 'b0;
@@ -279,7 +283,7 @@ always@(posedge clk or negedge rst_n)begin//第8次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第9次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x9 <= 'b0;
 		y9 <= 'b0;
 		z9 <= 'b0;
@@ -297,7 +301,7 @@ always@(posedge clk or negedge rst_n)begin//第9次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第10次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x10 <= 'b0;
 		y10 <= 'b0;
 		z10 <= 'b0;
@@ -315,7 +319,7 @@ always@(posedge clk or negedge rst_n)begin//第10次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第11次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x11 <= 'b0;
 		y11 <= 'b0;
 		z11 <= 'b0;
@@ -333,7 +337,7 @@ always@(posedge clk or negedge rst_n)begin//第11次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第12次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x12 <= 'b0;
 		y12 <= 'b0;
 		z12 <= 'b0;
@@ -351,7 +355,7 @@ always@(posedge clk or negedge rst_n)begin//第12次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第13次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x13 <= 'b0;
 		y13 <= 'b0;
 		z13 <= 'b0;
@@ -369,7 +373,7 @@ always@(posedge clk or negedge rst_n)begin//第13次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第14次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x14 <= 'b0;
 		y14 <= 'b0;
 		z14 <= 'b0;
@@ -387,7 +391,7 @@ always@(posedge clk or negedge rst_n)begin//第14次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第15次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x15 <= 'b0;
 		y15 <= 'b0;
 		z15 <= 'b0;
@@ -405,7 +409,7 @@ always@(posedge clk or negedge rst_n)begin//第15次迭代
 end 
 
 always@(posedge clk or negedge rst_n)begin//第16次迭代
-	if(!rst_n)begin
+	if(!rst_n || stat_nxt==IDLE)begin
 		x16 <= 'b0;
 		y16 <= 'b0;
 		z16 <= 'b0;
@@ -422,7 +426,7 @@ always@(posedge clk or negedge rst_n)begin//第16次迭代
 	end
 end 
 
-always@(posedge clk or negedge rst_n)begin//一次赋值
+always@(posedge clk or negedge rst_n)begin
 	if(!rst_n)begin
 		Cos <= 'b0;
 		Sin <= 'b0;
