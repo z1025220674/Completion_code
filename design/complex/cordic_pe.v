@@ -18,7 +18,7 @@ cordic_pe test (
     .start(),
     .Sin(),
     .Cos(),
-    .finished()
+    .finished_ndg()
 );
 */
 module cordic_pe(               
@@ -29,7 +29,7 @@ input			            vld,
 
 output 	reg signed[31:0]	Sin,            //经过18 cycle，放大16倍
 output 	reg signed[31:0]	Cos,
-output 			            finished_ndg
+output 			            finished_1
 
 );
 
@@ -80,14 +80,14 @@ reg  [4:0]           count;
 //======================================
 reg         [1 :0]          stat_nxt;
 reg         [1 :0]          stat_cur;
-wire                        finished;
+wire                        finished_ndg;
 localparam                  IDLE=0;
 localparam                  START=1;
 
 always @(*) begin
     case (stat_cur)
         IDLE    :stat_nxt=vld?START:stat_cur;//vld转到激活状态
-        START   :stat_nxt=finished?IDLE:stat_cur;
+        START   :stat_nxt=finished_ndg?IDLE:stat_cur;
         default :stat_nxt=stat_cur;
     endcase
 end
@@ -103,7 +103,7 @@ end
 //logic 
 //======================================
 
-assign finished_ndg =   stat_cur&(~stat_nxt);
+assign finished_1 =   stat_cur&(~stat_nxt);
 always@(posedge clk or negedge rst_n)begin
 	if(!rst_n)
 		count <= 'b0;
@@ -117,7 +117,7 @@ always@(posedge clk or negedge rst_n)begin
 			count <= count;
     end 
 end
-assign finished = (count == 5'd18)?1'b1:1'b0;
+assign finished_ndg = (count == 5'd18)?1'b1:1'b0;
 
 always@(posedge clk or negedge rst_n)begin//赋值
 	if(!rst_n)begin

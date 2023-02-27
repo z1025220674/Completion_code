@@ -1,3 +1,24 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2023/02/27 17:16:18
+// Design Name: 
+// Module Name: cordic_mod
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
 //功能：输入theta（角度），根据欧拉公式输出对应角度的实部和虚部
 //延迟：本模块经过18+2 cycle延迟
 /*
@@ -24,18 +45,21 @@ module cordic_mod (
     output              [31     : 0]            r_signal_o      //输出实部信号
 );
 
-assign  i_signal_o  =   i_signal_r;
-assign  r_signal_o  =   r_signal_r;
-assign  vld_o   =   vld_r;
 //========================================2
 //Quadrant division
 //=========================================
-    reg                     [24      :0]        cordic_angle;    //360整数部分      
-    reg                                         flag_sin;
-    reg                                         flag_cos;
-    wire                    [31     :0]         r_signal;
-    wire                    [31     :0]         i_signal;
-    wire                                        vld;
+    reg                     [24     : 0]    cordic_angle;    //360整数部分      
+    reg                                     flag_sin;
+    reg                                     flag_cos;
+    wire                    [31     : 0]    r_signal;
+    wire                    [31     : 0]    i_signal;
+    wire                                    vld;
+    reg                     [31     : 0]    i_signal_r;
+    reg                     [31     : 0]    r_signal_r;
+    wire                    [1      : 0]    flag_sc;
+    reg                                     vld_r;
+    wire                                    hand_shake;
+    reg                                     rand_shake_r;
     localparam  _360=360<<16;
     localparam  _180=180<<16;
     always @(posedge clk or negedge rst_n) begin                //1delay
@@ -70,6 +94,14 @@ assign  vld_o   =   vld_r;
             end    
         end
     end
+    always @(posedge clk or negedge rst_n) begin
+         if (!rst_n) begin
+            rand_shake_r    <= 'b0;   
+         end 
+         else begin
+            rand_shake_r    <=  rand_shake ;
+         end
+    end
     cordic_pe inst_theta (
     .clk(clk),
     .rst_n(rst_n),
@@ -83,11 +115,7 @@ assign  vld_o   =   vld_r;
 //========================================2
 //输出信号修正
 //=========================================
-    reg                         [31     : 0]        i_signal_r;
-    reg                         [31     : 0]        r_signal_r;
-    wire                        [1      : 0]        flag_sc;
-    reg                                             vld_r;
-    wire                                            hand_shake;
+
     assign  hand_shake  =   vld_o&rdy_i;
     assign  flag_sc =   {flag_sin,flag_cos};
     always @(posedge clk or negedge rst_n) begin
@@ -132,5 +160,11 @@ assign  vld_o   =   vld_r;
             vld_r   <=  vld;
         end
     end
+
+
+
+assign  i_signal_o  =   i_signal_r;
+assign  r_signal_o  =   r_signal_r;
+assign  vld_o   =   vld_r;
 
 endmodule

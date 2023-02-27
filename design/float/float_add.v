@@ -8,8 +8,8 @@ module float_add    //不同符号的浮点数据相加
 	output wire [31:0] ab
 );
 
-reg [7:0] pow_a;
-reg [7:0] pow_b;
+reg [7:0] a_e;
+reg [7:0] b_e;
 reg [22:0] val_a;
 reg [22:0] val_b;
 reg flag_a;
@@ -18,8 +18,8 @@ always @(*)
 begin
 	flag_a = a[31];   //提取符号
 	flag_b= b[31];
-	pow_a = a[30:23];//指数部分
-	pow_b = b[30:23];
+	a_e = a[30:23];//指数部分
+	b_e = b[30:23];
 	val_a = a[22:0];
 	val_b = b[22:0];
 end
@@ -31,25 +31,25 @@ reg [7:0] pow_ab1;
 reg flag1;
 always @(negedge MAIN_CLK)
 begin
-	if(pow_a > pow_b)    
+	if(a_e > b_e)    
 		begin
 			flag1 <= flag_a;  //输出符号随a
-			pow_ab1 <= pow_a;
-			pow_diff <= pow_a - pow_b;
+			pow_ab1 <= a_e;
+			pow_diff <= a_e - b_e;
 			val_max <= {2'b01,val_a};
 			val_min <= {2'b01,val_b};
 		end
-	else if(pow_a < pow_b) 
+	else if(a_e < b_e) 
 		begin
 			flag1 <= flag_b;  //输出符号随b
-			pow_ab1 <= pow_b;
-			pow_diff <= pow_b - pow_a;
+			pow_ab1 <= b_e;
+			pow_diff <= b_e - a_e;
 			val_max <= {2'b01,val_b};
 			val_min <= {2'b01,val_a};
 		end
 	else
 		begin
-			pow_ab1 <= pow_a;
+			pow_ab1 <= a_e;
 			pow_diff <= 0;
 			if(val_a > val_b)
 				begin
