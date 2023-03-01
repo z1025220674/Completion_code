@@ -75,7 +75,7 @@ module csc_stor #(                                                          //1c
     
     wire                                                val_shake;
     
-    reg                                                 S_vld_o_r;
+    reg                                                 S_vld_o_r;          //完成定点计算的稀疏矩阵元素
 
     wire                [63             : 0]            s_z0_i;
     wire                [63             : 0]            s_z0_r;

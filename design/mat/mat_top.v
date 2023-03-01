@@ -5,7 +5,7 @@
 //email:1025220674@qq.com
 //vivado2018.3
 //===================================
-module mat_csc #(
+module mat_top #(
     CHAOS_OVLD_W = 32,                          //random variable bit width
     SUBCAR_NUM   = 16,                          //number of subcarrier 
     OFDM_SYM_NUM = 16                           //number of ofdm symbol 
@@ -13,6 +13,11 @@ module mat_csc #(
     input                                       clk,
     input                                       rst_n,
 
+
+    input       [32                 -1: 0]      src_i,
+    input       [32                 -1: 0]      src_r,
+    input       [32                 -1: 0]      src_vld,
+    output      [32                 -1: 0]      src_rdy,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x1,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x2,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x3,
@@ -181,7 +186,28 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 // matrix multi
 //================================
 
+mat_multi #(
+    .MAT_RANK(MAT_RANK)
+) utu_mult(
+    .clk(clk),
+    .rst_n(rst_n),
 
+    .src_i(src_i),
+    .src_r(src_r),
+    .src_vld(),
+    .src_rdy(src_rdy),
+    .Scol_index(Scol_index),
+    .S_val_i0(S_val_i0),
+    .S_val_r0(S_val_r0),
+    .S_val_i1(S_val_i1),
+    .S_val_r1(S_val_r1),
+    .S_val_i2(S_val_i2),
+    .S_val_r2(S_val_r2),
+    .S_val_i3(S_val_i3),
+    .S_val_r3(S_val_r3),
+    .S_vld_o(S_vld_o),
+    .S_rdy_o(S_rdy_o)
+);
 
 
 endmodule
