@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 //===================================
 //date:2023/1/9
 //function:generate sparse matrix and store by csc format
@@ -38,12 +39,12 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     // reg                                         rand_shake_r;
     reg                                                     rand_rdy_r;
 
-    wire    [31                        : 0]                 theta;
-    wire    [31                        : 0]                 theta1;
-    wire    [31                        : 0]                 theta2;
-    wire    [31                        : 0]                 z0;
-    wire    [31                        : 0]                 z1;
-    wire                                                    rand_shake;
+    reg     [31                        : 0]                 theta;
+    reg     [31                        : 0]                 theta1;
+    reg     [31                        : 0]                 theta2;
+    reg     [31                        : 0]                 z0;
+    reg     [31                        : 0]                 z1;
+    reg                                                     rand_shake;
 
     wire                                                    s_vld;
     wire                                                    s_rdy;          //被矩阵生成模块约束    
@@ -61,6 +62,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     wire    [31                        : 0]                 S_val_r3;
     wire                                                    S_vld_o;
     wire                                                    S_rdy_o;
+    assign  S_rdy_o =   1;
     //float1
 //========================================    
 //output
@@ -72,7 +74,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
         if (!rst_n) begin                               //拉低条件（输入握手后，最后矩阵乘输出握手后）：表明正忙,输入握手拉高，
             rand_rdy_r  <=  'b0;    
         end 
-        else if()begin
+        else begin
             rand_rdy_r  <=  'b1;
         end
     end
@@ -81,12 +83,12 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //=========================================
 
     always @(*) begin
-        theta   <=  ((rand_x1>>16)*360);//16位代表0-1的范围
-        theta1  <=  (rand_x2>>16)*360;
-        theta2  <=  (rand_x3>>16)*360;
-        z0      <=  (rand_z1>>16)*360;
-        z1      <=  (rand_z2>>16)*360;
-        rand_shake  <=  rand_vld&rand_rdy;
+        theta   =  ((rand_x1>>16)*360);//16位代表0-1的范围
+        theta1  =  (rand_x2>>16)*360;
+        theta2  =  (rand_x3>>16)*360;
+        z0      =  (rand_z1>>16)*MAT_RANK;
+        z1      =  (rand_z2>>16)*MAT_RANK;
+        rand_shake =  rand_vld&rand_rdy;
     end
     // always @(posedge clk or negedge rst_n) begin//syn cordic_angle
     //     if(!rst_n)begin
@@ -148,7 +150,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //-------------------------------------
     
     csc_stor  #(
-        MAT_RANK(MAT_RANK)
+        .MAT_RANK(MAT_RANK)
     ) inst_matrix_gern(
         .clk(clk),
         .rst_n(rst_n),
@@ -178,52 +180,6 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
 //================================
 // matrix multi
 //================================
-
-
-    //---------------------------------------浮点乘法器
-    // assign rand_rdy = ;
-    // //float 3 delay
-    // floating_point_0 inst_theta (
-    // .aclk(clk),                                  // input wire aclk
-    // .aresetn(rst_n),                            // input wire aresetn
-    // .s_axis_a_tvalid(1),            // input wire s_axis_a_tvalid
-    // .s_axis_a_tready(),            // output wire s_axis_a_tready
-    // .s_axis_a_tdata(theta),              // input wire [31 : 0] s_axis_a_tdata
-    // .s_axis_b_tvalid(rst_n),            // input wire s_axis_b_tvalid
-    // .s_axis_b_tready(),            // output wire s_axis_b_tready
-    // .s_axis_b_tdata(aa),              // input wire [31 : 0] s_axis_b_tdata
-    // .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
-    // .m_axis_result_tready(1),  // input wire m_axis_result_tready
-    // .m_axis_result_tdata()    // output wire [31 : 0] m_axis_result_tdata
-    // );
-
-    // floating_point_0 inst_theta1 (
-    // .aclk(clk),                                  // input wire aclk
-    // .aresetn(rst_n),                            // input wire aresetn
-    // .s_axis_a_tvalid(1),            // input wire s_axis_a_tvalid
-    // .s_axis_a_tready(),            // output wire s_axis_a_tready
-    // .s_axis_a_tdata('h427D3333),              // input wire [31 : 0] s_axis_a_tdata
-    // .s_axis_b_tvalid(rst_n),            // input wire s_axis_b_tvalid
-    // .s_axis_b_tready(),            // output wire s_axis_b_tready
-    // .s_axis_b_tdata(aa),              // input wire [31 : 0] s_axis_b_tdata
-    // .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
-    // .m_axis_result_tready(1),  // input wire m_axis_result_tready
-    // .m_axis_result_tdata()    // output wire [31 : 0] m_axis_result_tdata
-    // );
-
-    // floating_point_0 inst_theta2 (
-    // .aclk(clk),                                  // input wire aclk
-    // .aresetn(rst_n),                            // input wire aresetn
-    // .s_axis_a_tvalid(1),            // input wire s_axis_a_tvalid
-    // .s_axis_a_tready(),            // output wire s_axis_a_tready
-    // .s_axis_a_tdata('h427D3333),              // input wire [31 : 0] s_axis_a_tdata
-    // .s_axis_b_tvalid(rst_n),            // input wire s_axis_b_tvalid
-    // .s_axis_b_tready(),            // output wire s_axis_b_tready
-    // .s_axis_b_tdata(aa),              // input wire [31 : 0] s_axis_b_tdata
-    // .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
-    // .m_axis_result_tready(1),  // input wire m_axis_result_tready
-    // .m_axis_result_tdata()    // output wire [31 : 0] m_axis_result_tdata
-    // );
 
 
 

@@ -45,7 +45,7 @@ module csc_stor #(                                                          //1c
     input          [31                        : 0]              a1_val_r,
     input                                                       val_vld,
     output                                                      val_rdy,
-    output         [$clog2(MAT_RANK)<<2     -1: 0]              Scol_index,  //首行非零元素位置
+    output         [($clog2(MAT_RANK)<<2)   -1: 0]              Scol_index,  //首行非零元素位置
     output         [31                        : 0]              S_val_i0,             
     output         [31                        : 0]              S_val_r0,             
     output         [31                        : 0]              S_val_i1,             
@@ -61,7 +61,7 @@ module csc_stor #(                                                          //1c
 //=========================================
 //declare
 //=========================================
-    localparam  INDEX_W =   $clog2(MAT_RANK);
+    localparam  INDEX_W =   $clog2(MAT_RANK);//8
     reg                 [31             : 0]            S_val_i0_r;     //第一个非零元素
     reg                 [31             : 0]            S_val_r0_r;
     reg                 [31             : 0]            S_val_i1_r;     //第二个
@@ -71,9 +71,8 @@ module csc_stor #(                                                          //1c
     reg                 [31             : 0]            S_val_i3_r;     //第四个
     reg                 [31             : 0]            S_val_r3_r;
 
-    reg                 [INDEX_W<<2    -1: 0]           Scol_index_r;      //存储第一行4个非零元素列位置
+    reg                 [(INDEX_W<<2)  -1: 0]           Scol_index_r;      //存储第一行4个非零元素列位置
     
-    reg                                                 val_rdy_r;
     wire                                                val_shake;
     
     reg                                                 S_vld_o_r;
@@ -88,31 +87,118 @@ module csc_stor #(                                                          //1c
     wire                [63             : 0]            s_z1_N2_r;
 
     assign  val_shake   =   val_rdy & val_vld;
-    assign  S_val_i0    =   S_val_i0_r;
-    assign  S_val_r0    =   S_val_r0_r;
-    assign  S_val_i1    =   S_val_i1_r;
-    assign  S_val_r1    =   S_val_r1_r;
-    assign  S_val_i2    =   S_val_i2_r;
-    assign  S_val_r2    =   S_val_r2_r;
-    assign  S_val_i3    =   S_val_i3_r;
-    assign  S_val_r3    =   S_val_r3_r;
+    // assign  S_val_i0    =   S_val_i0_r;
+    // assign  S_val_r0    =   S_val_r0_r;
+    // assign  S_val_i1    =   S_val_i1_r;
+    // assign  S_val_r1    =   S_val_r1_r;
+    // assign  S_val_i2    =   S_val_i2_r;
+    // assign  S_val_r2    =   S_val_r2_r;
+    // assign  S_val_i3    =   S_val_i3_r;
+    // assign  S_val_r3    =   S_val_r3_r;
     assign  Scol_index  =   Scol_index_r;
-    assign  S_vld_o =   S_vld_o_r;
-    assign  val_rdy =   val_rdy_r;
+    // assign  S_vld_o =   S_vld_o_r;
+    // assign  val_rdy =   val_rdy;
+
+//=========================================
+//定点转换浮点
+//=========================================
+    floating_point_0 fix_float_0i (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(val_rdy),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_i0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(S_vld_o),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_i0)    // output wire [31 : 0] m_axis_result_tdata
+    );
+    floating_point_0 fix_float_0r (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_r0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_r0)    // output wire [31 : 0] m_axis_result_tdata
+    );
+//=========================================
+    floating_point_0 fix_float_1i (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_i0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_i1)    // output wire [31 : 0] m_axis_result_tdata
+    );
+    floating_point_0 fix_float_1r (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_r0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_r1)    // output wire [31 : 0] m_axis_result_tdata
+    );
+//=========================================
+    floating_point_0 fix_float_2i (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_i0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_i2)    // output wire [31 : 0] m_axis_result_tdata
+    );
+    floating_point_0 fix_float_2r (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_r0_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_r2)    // output wire [31 : 0] m_axis_result_tdata
+    );
+//=========================================
+    floating_point_0 fix_float_3i (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_i3_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_i3)    // output wire [31 : 0] m_axis_result_tdata
+    );
+    floating_point_0 fix_float_3r (
+    .aclk(clk),                                  // input wire aclk
+    .aresetn(rst_n),                            // input wire aresetn
+    .s_axis_a_tvalid(S_vld_o_r),            // input wire s_axis_a_tvalid
+    .s_axis_a_tready(),            // output wire s_axis_a_tready
+    .s_axis_a_tdata(S_val_r3_r),              // input wire [31 : 0] s_axis_a_tdata
+    .m_axis_result_tvalid(),  // output wire m_axis_result_tvalid
+    .m_axis_result_tready(S_rdy_o),  // input wire m_axis_result_tready
+    .m_axis_result_tdata(S_val_r3)    // output wire [31 : 0] m_axis_result_tdata
+    );
 //=========================================
 //shake
 //=========================================
-    always @(posedge clk or negedge rst_n) begin        //闲时*向上级模块请求输入参数的信号，拉高条件：本模块Svld_o=0,即本模块没有工作，且把输出信号完成transaction
-        if (!rst_n) begin                               //拉低条件：本模块正在工作，Svld_o=1，还有本模块完成输入握手
-            val_rdy_r   <=  'b1;    
-        end 
-        else if(val_shake || S_vld_o_r)begin
-            val_rdy_r   <=  'b0;
-        end
-        else if(!S_vld_o_r)begin
-            val_rdy_r   <=  'b1;
-        end
-    end
+    // always @(posedge clk or negedge rst_n) begin        //闲时*向上级模块请求输入参数的信号，拉高条件：本模块Svld_o=0,即本模块没有工作，且把输出信号完成transaction
+    //     if (!rst_n) begin                               //拉低条件：本模块正在工作，Svld_o=1，还有本模块完成输入握手
+    //         val_rdy_r   <=  'b1;    
+    //     end 
+    //     else if(val_shake || S_vld_o_r)begin
+    //         val_rdy_r   <=  'b0;
+    //     end
+    //     else if(!S_vld_o_r)begin
+    //         val_rdy_r   <=  'b1;
+    //     end
+    // end
 
     always @(posedge clk or negedge rst_n) begin        //本信号表明输出信号有效，拉高条件（正忙）：输入握手
         if (!rst_n) begin                               //拉低条件（闲）；输出握手
@@ -192,28 +278,31 @@ module csc_stor #(                                                          //1c
 //=========================================
 //第一行非零元素的位置
 //=========================================
-
+    wire                [INDEX_W       -1: 0]           z0_N_2;
+    wire                [INDEX_W       -1: 0]           z1_N_2;
+    assign z0_N_2   =   z0[16+:INDEX_W]+(MAT_RANK>>>1);
+    assign z1_N_2   =   z1[16+:INDEX_W]+(MAT_RANK>>>1);
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             Scol_index_r   <=  'b0;
         end 
         else if(val_shake && z0<z1)begin
-            Scol_index_r[0             +:INDEX_W]   <=  z0[16+:9];
-            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z1[16+:9];
-            Scol_index_r[(INDEX_W<<1)  +:INDEX_W]   <=  z0[16+:9]+(MAT_RANK>>1);
-            Scol_index_r[(INDEX_W*3 )  +:INDEX_W]   <=  z1+(MAT_RANK>>1);
+            Scol_index_r[0             +:INDEX_W]   <=  z0[16+:INDEX_W];
+            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z1[16+:INDEX_W];
+            Scol_index_r[(INDEX_W<<1)  +:INDEX_W]   <=  z0_N_2;
+            Scol_index_r[(INDEX_W*3 )  +:INDEX_W]   <=  z0_N_2;
         end
         else if(val_shake && z0==z1)begin
-            Scol_index_r[0             +:INDEX_W]   <=  z0[16+:9];
-            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z0[16+:9]+(MAT_RANK>>1);
+            Scol_index_r[0             +:INDEX_W]   <=  z0[16+:INDEX_W];
+            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z0[16+:INDEX_W]+(MAT_RANK>>>1);
             Scol_index_r[(INDEX_W<<1)  +:INDEX_W]   <=  'b0;
             Scol_index_r[(INDEX_W*3 )  +:INDEX_W]   <=  'b0;
         end
         else if(val_shake && z0>z1)begin
-            Scol_index_r[0             +:INDEX_W]   <=  z1[16+:9];
-            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z0[16+:9];
-            Scol_index_r[(INDEX_W<<1)  +:INDEX_W]   <=  z1[16+:9]+(MAT_RANK>>1);
-            Scol_index_r[(INDEX_W*3 )  +:INDEX_W]   <=  z0[16+:9]+(MAT_RANK>>1);
+            Scol_index_r[0             +:INDEX_W]   <=  z1[16+:INDEX_W];
+            Scol_index_r[(INDEX_W   )  +:INDEX_W]   <=  z0[16+:INDEX_W];
+            Scol_index_r[(INDEX_W<<1)  +:INDEX_W]   <=  z1[16+:INDEX_W]+(MAT_RANK>>>1);
+            Scol_index_r[(INDEX_W*3 )  +:INDEX_W]   <=  z0[16+:INDEX_W]+(MAT_RANK>>>1);
         end
     end
 
