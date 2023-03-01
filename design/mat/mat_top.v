@@ -16,15 +16,19 @@ module mat_top #(
 
     input       [32                 -1: 0]      src_i,
     input       [32                 -1: 0]      src_r,
-    input       [32                 -1: 0]      src_vld,
-    output      [32                 -1: 0]      src_rdy,
+    input                                       src_vld,
+    output                                      src_rdy,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x1,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x2,
     input       [CHAOS_OVLD_W       -1: 0]      rand_x3,
     input       [CHAOS_OVLD_W       -1: 0]      rand_z1,
     input       [CHAOS_OVLD_W       -1: 0]      rand_z2,
     input                                       rand_vld,
-    output                                      rand_rdy            //闲时*请求上级输入参数，
+    output                                      rand_rdy,            //闲时*请求上级输入参数，
+    output      [32                 -1: 0]      spmv_i,
+    output      [32                 -1: 0]      spmv_r,
+    output                                      spmv_vld,
+    input                                       spmv_rdy
 
 
 );
@@ -56,7 +60,7 @@ localparam  MAT_RANK = OFDM_SYM_NUM*SUBCAR_NUM;//1 slot
     wire    [31                        : 0]                 s12_ival;
     wire    [31                        : 0]                 s12_rval;
 
-    wire    [$clog2(MAT_RANK)<<2     -1: 0]                 Scol_index;
+    wire    [($clog2(MAT_RANK)<<2)   -1: 0]                 Scol_index;
     wire    [31                        : 0]                 S_val_i0;
     wire    [31                        : 0]                 S_val_r0;
     wire    [31                        : 0]                 S_val_i1;
@@ -194,7 +198,7 @@ mat_multi #(
 
     .src_i(src_i),
     .src_r(src_r),
-    .src_vld(),
+    .src_vld(src_vld),
     .src_rdy(src_rdy),
     .Scol_index(Scol_index),
     .S_val_i0(S_val_i0),
@@ -206,7 +210,11 @@ mat_multi #(
     .S_val_i3(S_val_i3),
     .S_val_r3(S_val_r3),
     .S_vld_o(S_vld_o),
-    .S_rdy_o(S_rdy_o)
+    .S_rdy_o(S_rdy_o),
+    .spmv_i(spmv_i),
+    .spmv_r(spmv_r),
+    .spmv_vld(spmv_vld),
+    .spmv_rdy(spmv_rdy)
 );
 
 

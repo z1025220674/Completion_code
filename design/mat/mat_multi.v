@@ -11,7 +11,7 @@ module mat_multi #(
     input            [31                        : 0]                src_r,
     input                                                           src_vld,
     output                                                          src_rdy,        //求源序列输入
-    input            [$clog2(MAT_RANK)<<2     -1: 0]                Scol_index,
+    input            [($clog2(MAT_RANK)<<2)   -1: 0]                Scol_index,
     input            [31                        : 0]                S_val_i0,
     input            [31                        : 0]                S_val_r0,
     input            [31                        : 0]                S_val_i1,
@@ -33,7 +33,7 @@ module mat_multi #(
 //==================================================
 //declare
 //==================================================
-    reg                                                             src_rdy_r;   
+    // reg                                                             src_rdy_r;   
     reg              [11                        : 0]                addra_r;
     wire                                                            ena;   
     wire             [63                        : 0]                douta;
@@ -42,7 +42,7 @@ module mat_multi #(
     wire             [11                        : 0]                addrb1;
     wire             [11                        : 0]                addrb2;
     wire             [11                        : 0]                addrb3;
-    wire                                                            enb; 
+    // wire                                                            enb; 
     reg                                                             enb_r;  
     wire             [63                        : 0]                doutb0;
     wire             [63                        : 0]                doutb1;
@@ -57,13 +57,7 @@ module mat_multi #(
     reg              [31                        : 0]                S_val_i3_r;
     reg              [31                        : 0]                S_val_r3_r;
 
-    assign  spmv_i  =   spmv_i_r;
-    assign  spmv_r  =   spmv_r_r;
-    assign  spmv_vld=   spmv_vld_r;
-    assign  S_rdy_o =   1'b1;       //请求csc矩阵的行向量输入
-    assign  douta   =   {src_i,src_r};  
-    assign  src_rdy =   1'b1;
-    assign  ena =src_vld;
+    
 //==================================================
 //ram in
 //==================================================
@@ -253,7 +247,7 @@ end
 
 ram_source inst_soucre_ir_0 (
   .clka(clk),    // input wire clka
-  .ena(ena_r),      // input wire ena
+  .ena(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
   .douta(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
@@ -265,7 +259,7 @@ ram_source inst_soucre_ir_0 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第二个非零元素相乘
 ram_source inst_soucre_ir_1 (
   .clka(clk),    // input wire clka
-  .ena(ena_r),      // input wire ena
+  .ena(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
   .douta(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
@@ -277,7 +271,7 @@ ram_source inst_soucre_ir_1 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第三个非零元素相乘
 ram_source inst_soucre_ir_2 (
   .clka(clk),    // input wire clka
-  .ena(ena_r),      // input wire ena
+  .ena(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
   .douta(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
@@ -289,7 +283,7 @@ ram_source inst_soucre_ir_2 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第四个非零元素相乘
 ram_source inst_soucre_ir_3 (
   .clka(clk),    // input wire clka
-  .ena(ena_r),      // input wire ena
+  .ena(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
   .douta(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
@@ -298,4 +292,14 @@ ram_source inst_soucre_ir_3 (
   .doutb(doutb3)  // output wire [63 : 0] doutb
 );
 
+
+
+
+    assign  spmv_i  =   spmv_i_r;
+    assign  spmv_r  =   spmv_r_r;
+    assign  spmv_vld=   spmv_vld_r;
+    assign  S_rdy_o =   1'b1;       //请求csc矩阵的行向量输入
+    assign  douta   =   {src_i,src_r};  
+    assign  src_rdy =   addra_r==32'b0;
+    assign  ena =src_vld;
 endmodule
