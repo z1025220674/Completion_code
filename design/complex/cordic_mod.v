@@ -84,12 +84,12 @@ module cordic_mod (
             else begin
                 if (theta[24:16]>'d90) begin//2
                     cordic_angle    <=  _180-theta[24:0];
-                    flag_sin    <=  'd1;//-1
+                    flag_sin    <=  'd1;//
                     flag_cos    <=  'd0;
                 end 
                 else begin//1
                     cordic_angle    <=  theta[24:0];
-                    flag_sin    <=  'd1;//-1
+                    flag_sin    <=  'd1;//
                     flag_cos    <=  'd1;
                 end
             end    
