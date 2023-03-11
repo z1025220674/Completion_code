@@ -7,12 +7,12 @@ module mat_multi #(
     input                                                           clk,
     input                                                           rst_n,
 
-    input            [31                        : 0]                src_i,
+    input            [31                        : 0]                src_i,          //源序列输入
     input            [31                        : 0]                src_r,
     input                                                           src_vld,
     output                                                          src_rdy,        //求源序列输入
     input            [($clog2(MAT_RANK)<<2)   -1: 0]                Scol_index,
-    input            [31                        : 0]                S_val_i0,
+    input            [31                        : 0]                S_val_i0,       //输入的四个非零
     input            [31                        : 0]                S_val_r0,
     input            [31                        : 0]                S_val_i1,
     input            [31                        : 0]                S_val_r1,
@@ -23,7 +23,7 @@ module mat_multi #(
     input                                                           S_vld_o,
     output                                                          S_rdy_o,
 
-    output           [31                        : 0]                spmv_i,
+    output           [31                        : 0]                spmv_i,         //输出预编码后的序列
     output           [31                        : 0]                spmv_r,
     output                                                          spmv_vld,
     input                                                           spmv_rdy              
@@ -33,7 +33,7 @@ module mat_multi #(
 //==================================================
 //declare
 //==================================================
-    // reg                                                             src_rdy_r;   
+    reg                                                             src_rdy_r;   
     reg              [11                        : 0]                addra_r;
     wire                                                            ena;   
     wire             [63                        : 0]                douta;
@@ -42,7 +42,11 @@ module mat_multi #(
     wire             [11                        : 0]                addrb1;
     wire             [11                        : 0]                addrb2;
     wire             [11                        : 0]                addrb3;
-    // wire                                                            enb; 
+    reg              [11                        : 0]                addrb0_r;     //通过列索引读取ram
+    reg              [11                        : 0]                addrb1_r;
+    reg              [11                        : 0]                addrb2_r;
+    reg              [11                        : 0]                addrb3_r;
+
     reg                                                             enb_r;  
     wire             [63                        : 0]                doutb0;
     wire             [63                        : 0]                doutb1;
@@ -61,23 +65,23 @@ module mat_multi #(
 //==================================================
 //ram in
 //==================================================
-    // always @(posedge clk or negedge rst_n) begin  // 握手情况：单次，多次：vld连续，不连续;只需要看不连续符号块（256个数组一组）,
-    //     if (!rst_n) begin
-    //         src_rdy_r   <=  'b0;    
-    //     end 
-    //     else if()begin
-    //         src_rdy_r   <=  0;
-    //     end
-    //     else if()begin
-    //         src_rdy_r   <=  1;
-    //     end
-    // end
+    always @(posedge clk or negedge rst_n) begin  // 握手情况：单次，多次：vld连续，不连续;只需要看不连续符号块（256个数组一组）,
+        if (!rst_n) begin
+            src_rdy_r   <=  1'b1;    
+        end 
+        else if((addra_r==MAT_RANK-1 )&& (ena) && (src_rdy_r))begin
+            src_rdy_r   <=  0;
+        end
+        else if(addra_r==12'b0 && enb_r )begin
+            src_rdy_r   <=  1;
+        end
+    end
 
     always @(posedge clk ) begin
         if (!rst_n) begin
             addra_r   <=  32'b0;
         end 
-        else if((addra_r==MAT_RANK-1 )&& (ena) )begin
+        else if((addra_r==MAT_RANK-1 )&& (ena) && (src_rdy_r))begin
             addra_r   <=  addra_r;
         end
         else if((addra_r==0 )&& (enb_r) )begin
@@ -205,14 +209,20 @@ end
     assign  addrb1  =   Scol_index[$clog2(MAT_RANK) +:$clog2(MAT_RANK)];
     assign  addrb2  =   Scol_index[($clog2(MAT_RANK)<<1) +:$clog2(MAT_RANK)];
     assign  addrb3  =   Scol_index[($clog2(MAT_RANK)*3)  +:$clog2(MAT_RANK)];
-// always @(posedge clk or negedge rst_n) begin                      
-//     if (!rst_n) begin
-        
-//     end 
-//     else begin
-        
-//     end
-// end
+always @(posedge clk or negedge rst_n) begin                      
+    if (!rst_n) begin
+        addrb0_r  <=  12'b0;
+        addrb1_r  <=  12'b0;
+        addrb2_r  <=  12'b0;
+        addrb3_r  <=  12'b0;
+    end 
+    else if(enb_r)begin
+        addrb0_r  <=  addrb0 + 1'b1;
+        addrb1_r  <=  addrb1 + 1'b1;
+        addrb2_r  <=  addrb2 + 1'b1;
+        addrb3_r  <=  addrb3 + 1'b1;
+    end
+end
 always @(posedge clk or negedge rst_n) begin                    //做ram读取，doutb输出的有效信号
     if (!rst_n) begin
         b_vld_r <=  1'b0; 
@@ -237,7 +247,7 @@ end
 //source ram
 //==================================================
 //==================================================
-//source ram write
+//浮点转定点
 //==================================================
 
 //==================================================
@@ -247,9 +257,9 @@ end
 
 ram_source inst_soucre_ir_0 (
   .clka(clk),    // input wire clka
-  .ena(ena),      // input wire ena
+  .wea(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
-  .douta(douta),  // output wire [63 : 0] douta
+  .dina(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
   .enb(enb_r),      // input wire enb
   .addrb(addrb0),  // input wire [11 : 0] addrb
@@ -259,9 +269,9 @@ ram_source inst_soucre_ir_0 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第二个非零元素相乘
 ram_source inst_soucre_ir_1 (
   .clka(clk),    // input wire clka
-  .ena(ena),      // input wire ena
+  .wea(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
-  .douta(douta),  // output wire [63 : 0] douta
+  .dina(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
   .enb(enb_r),      // input wire enb
   .addrb(addrb1),  // input wire [11 : 0] addrb
@@ -271,9 +281,9 @@ ram_source inst_soucre_ir_1 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第三个非零元素相乘
 ram_source inst_soucre_ir_2 (
   .clka(clk),    // input wire clka
-  .ena(ena),      // input wire ena
+  .wea(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
-  .douta(douta),  // output wire [63 : 0] douta
+  .dina(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
   .enb(enb_r),      // input wire enb
   .addrb(addrb2),  // input wire [11 : 0] addrb
@@ -283,16 +293,20 @@ ram_source inst_soucre_ir_2 (
 //存储向量（子载波符号块个数*子载波数）16*16,用于和第四个非零元素相乘
 ram_source inst_soucre_ir_3 (
   .clka(clk),    // input wire clka
-  .ena(ena),      // input wire ena
+  .wea(ena),      // input wire ena
   .addra(addra_r),  // input wire [11 : 0] addra
-  .douta(douta),  // output wire [63 : 0] douta
+  .dina(douta),  // output wire [63 : 0] douta
   .clkb(clk),    // input wire clkb
   .enb(enb_r),      // input wire enb
   .addrb(addrb3),  // input wire [11 : 0] addrb
   .doutb(doutb3)  // output wire [63 : 0] doutb
 );
-
-
+    else if(enb_r)begin
+        addrb0_r  <=  (addrb0_r + 1'b1)%MAT_RANK;
+        addrb1_r  <=  (addrb1_r + 1'b1)%MAT_RANK;
+        addrb2_r  <=  (addrb2_r + 1'b1)%MAT_RANK;
+        addrb3_r  <=  (addrb3_r + 1'b1)%MAT_RANK;
+    end
 
 
     assign  spmv_i  =   spmv_i_r;
